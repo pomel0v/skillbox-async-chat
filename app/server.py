@@ -14,9 +14,8 @@ class ServerProtocol(asyncio.Protocol):
         self.server = server
 
     def data_received(self, data: bytes):
-        print(data)
-
-        decoded = data.decode()
+        decoded = data.decode().strip('\r\n')
+        print(decoded)
 
         if self.login is not None:
             self.send_message(decoded)
