@@ -37,6 +37,7 @@ class ServerProtocol(asyncio.Protocol):
 
                 else:
                     self.transport.write(f"Привет, {self.login}!".encode())
+                    self.send_history()
 
             else:
                 self.transport.write("Ошибка! Сначала нужно авторизоваться. Команда login:<ваш логин>".encode())
@@ -56,12 +57,20 @@ class ServerProtocol(asyncio.Protocol):
         for user in self.server.clients:
             user.transport.write(message.encode())
 
+        self.server.history.append(message)
+
+    def send_history(self, n=10):
+        history = self.server.history[-n:]
+        self.transport.write(f"Last {n} messages:\n".encode())
+        self.transport.write('\n'.join(history).encode())
+
 
 class Server:
     clients: list
 
     def __init__(self):
         self.clients = []
+        self.history = []
 
     def build_protocol(self):
         return ServerProtocol(self)
