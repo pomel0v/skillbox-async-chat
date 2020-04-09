@@ -24,14 +24,22 @@ class ServerProtocol(asyncio.Protocol):
 
         if self.login is not None:
             self.send_message(decoded)
+
         else:
             if decoded.startswith("login:"):
-                self.login = decoded.replace("login:", "").replace("\r\n", "")
-                self.transport.write(
-                    f"Привет, {self.login}!\n".encode()
-                )
+                self.login = decoded.replace("login:", "")
+
+                for client in self.server.clients:
+                    if self.login == client.login and self != client:
+                        self.transport.write(
+                            f"{self.timestamp} Ошибка! Логин {self.login} уже занят, попробуйте другой.".encode())
+                        self.transport.close()
+
+                else:
+                    self.transport.write(f"Привет, {self.login}!".encode())
+
             else:
-                self.transport.write("Неправильный логин\n".encode())
+                self.transport.write("Ошибка! Сначала нужно авторизоваться. Команда login:<ваш логин>".encode())
 
     def connection_made(self, transport: transports.Transport):
         self.server.clients.append(self)
