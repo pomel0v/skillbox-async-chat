@@ -2,6 +2,7 @@
 # Серверное приложение для соединений
 #
 import asyncio
+import time
 from asyncio import transports
 
 
@@ -13,9 +14,13 @@ class ServerProtocol(asyncio.Protocol):
     def __init__(self, server: 'Server'):
         self.server = server
 
+    @property
+    def timestamp(self):
+        return time.strftime("%H:%M:%S", time.localtime())
+
     def data_received(self, data: bytes):
         decoded = data.decode().strip('\r\n')
-        print(decoded)
+        print(self.timestamp, decoded)
 
         if self.login is not None:
             self.send_message(decoded)
@@ -38,7 +43,7 @@ class ServerProtocol(asyncio.Protocol):
         print("Клиент вышел")
 
     def send_message(self, content: str):
-        message = f"{self.login}: {content}"
+        message = f"{self.timestamp} <{self.login}>: {content}"
 
         for user in self.server.clients:
             user.transport.write(message.encode())
