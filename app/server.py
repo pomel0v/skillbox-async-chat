@@ -3,13 +3,12 @@
 #
 import asyncio
 import time
-from asyncio import transports
 
 
 class ServerProtocol(asyncio.Protocol):
     login: str = None
     server: 'Server'
-    transport: transports.Transport
+    transport: asyncio.transports.Transport
 
     def __init__(self, server: 'Server'):
         self.server = server
@@ -42,7 +41,7 @@ class ServerProtocol(asyncio.Protocol):
             else:
                 self.transport.write("Ошибка! Сначала нужно авторизоваться. Команда login:<ваш логин>".encode())
 
-    def connection_made(self, transport: transports.Transport):
+    def connection_made(self, transport: asyncio.transports.Transport):
         self.server.clients.append(self)
         self.transport = transport
         print("Пришел новый клиент")
